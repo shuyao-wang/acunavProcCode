@@ -67,6 +67,7 @@ tidx2 = [par.nref+[1:par.npush+1]];
 res.arfidata(:,:,tidx2) = motion1(:,:,tidx2);
 clear residtmp motion1 tidx1 tidx2;
 
+
 %% Scan Convert
 sc = struct(...
     'min_phi', res.angular(1),...
@@ -81,11 +82,12 @@ if strcmpi(par.mode,'ARFI')
 end
 
 %% Display 
-disp_lim = [-1 10];
+disp_lim = [-1 8];
 
 figure
 
 subplot(2,2,[1 3])
+set(gcf,'Position',[1950 330 560 420])
 set(gca,'Position',[0.1 0.2 0.4 0.4])
 for i=1:size(res.arfidata,3)
     if strcmpi(par.mode,'ARFI')
@@ -94,7 +96,9 @@ for i=1:size(res.arfidata,3)
         ylabel('Axial (cm)')
         title(sprintf('probe: %s\n baseName/setName: %s/%s\n',par.probe,par.baseName,par.setName),'interpreter','none')
         axis image
+
     elseif strcmpi(par.mode,'MMODE')
+        subplot(223)
         imagesc([],res.radial,res.arfidata(:,:,i),disp_lim)
         xlabel('Push #')
         ylabel('Axial (cm)')

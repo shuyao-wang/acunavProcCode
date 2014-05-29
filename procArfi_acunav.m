@@ -270,15 +270,15 @@ if strcmp(par.probeType,'linear')
 elseif max(strcmp(par.probeType,{'curvilinear','phased'}))
     if bmodeSave
         if exist('cc_coef', 'var')
-            save(resfile, 'arfidata', 'radial', 'angular', 'apex', 't', 'cc_coef', 'bimg', 'blat', 'bax', '-v7.3');
+            save(resfile, 'arfidata', 'I', 'Q', 'radial', 'angular', 'apex', 't', 'cc_coef', 'bimg', 'blat', 'bax', '-v7.3');
         else
-            save(resfile, 'arfidata', 'radial', 'angular', 'apex', 't', 'bimg', 'blat', 'bax', '-v7.3');
+            save(resfile, 'arfidata', 'I', 'Q', 'radial', 'angular', 'apex', 't', 'bimg', 'blat', 'bax', '-v7.3');
         end
     else
         if exist('cc_coef', 'var')
-            save(resfile, 'arfidata', 'radial', 'angular', 'apex', 't', 'cc_coef', '-v7.3');
+            save(resfile, 'arfidata', 'I', 'Q', 'radial', 'angular', 'apex', 't', 'cc_coef', '-v7.3');
         else
-            save(resfile, 'arfidata', 'radial', 'angular', 'apex', 't', '-v7.3');
+            save(resfile, 'arfidata', 'I', 'Q', 'radial', 'angular', 'apex', 't', '-v7.3');
         end
     end
 else
