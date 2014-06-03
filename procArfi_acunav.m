@@ -1,4 +1,4 @@
-function procArfi_acunav(fname, parFile, interpFactor, kernelLength, ccmode)
+function procArfi_acunav(fname, parFile, interpFactor, kernelLength, ccmode, ref_idx)
 % function procArfi(fname, parFile, interpFactor, kernelLength, ccmode)
 %
 % Inputs: fname - file name of binary file saved using analytic pipeline (SWIF_AData*.bin) 
@@ -7,14 +7,15 @@ function procArfi_acunav(fname, parFile, interpFactor, kernelLength, ccmode)
 %         interpFactor - upsampling factor to use (5)
 %         kernelLength - length of kernel to use in loupas in wavelengths (4)
 %         ccmode - whether or not to compute correlation coeffients (0)
+%         ref_idx - index of time step to use as the reference for displacement estimation (par.nref) (-1 for Progressive)
 % All inputs are optional and will default to the values in parentheses if ommitted
 
 if ispc
     addpath C:\users\vrk4\Documents\GitHub\SC2000\arfiProcCode\
-    addpath C:\users\vrk4\Documents\GitHub\SC2000\acunavProcCode\
+    addpath C:\users\vrk4\Documents\GitHub\acunavProcCode\
 else
     addpath /emfd/vrk4/GitHub/SC2000/arfiProcCode
-    addpath /emfd/vrk4/GitHub/SC2000/acunavProcCode
+    addpath /emfd/vrk4/GitHub/acunavProcCode
 end
 
 % Check inputs and set default parameters
@@ -53,7 +54,9 @@ end
 if nargin<5
     ccmode = 0;
 end
-
+if nargin<6
+    ref_idx = []; % unless explicitly supplied, value of ref_idx is set after loading in par file and detecting location of push frame
+end
 
 % Check to make sure data, dimensions, and parameters files all exist
 dimsname = fullfile(basePath,strcat('SWIF_ADataDims_',timeStamp,'.txt'));
@@ -79,7 +82,7 @@ fprintf(1, 'basename/setName: %s/%s\n',par.baseName,par.setName)
 temp_cc = computeCC(I(:,round(size(I,2)/2),1:par.nref+par.npush),round(size(I,1)/2));
 temp_cc = squeeze(mean(temp_cc,1));
 temp_cc(find(isnan(temp_cc))) = 0;
-acq_nref = find(temp_cc<0.5,1)-1;
+acq_nref = find(abs(temp_cc)<0.5,1)-1;
 if acq_nref == par.nref
     fprintf(1,'Push frame at expected location\n');
 elseif acq_nref == par.nref-1
@@ -89,7 +92,12 @@ elseif acq_nref == par.nref-1
 else
     warning('Unable to detect location of push frame using correlation coefficients. Check IQ Data')
 end
-    
+
+if isempty(ref_idx)
+    ref_idx = par.nref;
+end
+par.ref_idx = ref_idx;
+
 % add number of acquisitions and harmonic flag to parameters structure if it isn't there
 if ~isfield(par, 'numAcq'),par.numAcq = 1;end
 if ~isfield(par, 'isHarmonic'), par.isHarmonic = 0;end
@@ -107,10 +115,6 @@ if par.isHarmonic
     [I,Q] = genHarmonicSummedData(I,Q,par);
 end
 
-% move the last reference to the first vector
-I = I(:,:,[par.nref,1:par.nref-1,par.nref+1:par.ensemble]);
-Q = Q(:,:,[par.nref,1:par.nref-1,par.nref+1:par.ensemble]);
-
 % Compute axial vector
 N = size(I,1)*interpFactor;
 axial = (0:N-1)*(par.c/1e3)/(2*par.fs*interpFactor);
@@ -124,11 +128,17 @@ end
 par.lambda = par.c / par.fc * 1e3; % mm
 
 % Compute displacements using the last reference and then reorder the data
-[arfidata, I, Q] = runLoupas(I, Q, interpFactor, kernelLength, axial, par);
-arfidata = single(arfidata(:,:,[2:par.nref,1,par.nref+1:par.ensemble]));
-I = single(I(:,:,[2:par.nref,1,par.nref+1:par.ensemble]));
-Q = single(Q(:,:,[2:par.nref,1,par.nref+1:par.ensemble]));
+if par.ref_idx == -1
+    fprintf(1,'Computing displacements: Progressive\n')
+else
+    fprintf(1,'Computing displacements: Anchored at Frame %d (par.nref = %d)\n',par.ref_idx,par.nref)
+end
 
+[arfidata, I, Q] = runLoupas(I, Q, interpFactor, kernelLength, axial, par);
+arfidata = single(arfidata);
+I = single(I);
+Q = single(Q);
+    
 if ccmode
     fprintf(1, 'Computing complex correlation coefficients\n');
     fs = par.fs*1e6*interpFactor;
