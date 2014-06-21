@@ -91,8 +91,13 @@ disp_lim = [-1 8];
 figure
 
 subplot(2,2,[1 3])
+if ispc
+    set(gcf,'Position',[100 330 560 420])
+else
 set(gcf,'Position',[1950 330 560 420])
+end
 set(gca,'Position',[0.1 0.2 0.4 0.4])
+
 for i=1:size(res.arfidata,3)
     if strcmpi(par.mode,'ARFI')
         imagesc(lat,ax,res.scarfidata(:,:,i),disp_lim)
@@ -102,14 +107,13 @@ for i=1:size(res.arfidata,3)
         axis image
 
     elseif strcmpi(par.mode,'MMODE')
-        subplot(223)
         imagesc([],res.radial,res.arfidata(:,:,i),disp_lim)
         xlabel('Push #')
         ylabel('Axial (cm)')
         title(sprintf('probe: %s\n baseName/setName: %s/%s\n',par.probe,par.baseName,par.setName),'interpreter','none')
     end
     colorbar
-    pause
+    pause(0.05)
 end
 axgate = par.pushFocalDepth + [-1 1];
 idxgate = [find(res.radial>axgate(1),1) find(res.radial>axgate(2),1)];

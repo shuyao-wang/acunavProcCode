@@ -266,15 +266,15 @@ resfile = ['res_' timeStamp '.mat'];
 if strcmp(par.probeType,'linear')
     if bmodeSave
         if exist('cc_coef', 'var')
-            save(resfile, 'arfidata', 'axial', 'lat', 't', 'cc_coef', 'bimg', 'blat', 'bax', '-v7.3');
+            save(resfile, 'arfidata', 'I', 'Q', 'axial', 'lat', 't', 'cc_coef', 'bimg', 'blat', 'bax', '-v7.3');
         else
-            save(resfile, 'arfidata', 'axial', 'lat', 't', 'bimg', 'blat', 'bax', '-v7.3');
+            save(resfile, 'arfidata', 'I', 'Q', 'axial', 'lat', 't', 'bimg', 'blat', 'bax', '-v7.3');
         end
     else
         if exist('cc_coef', 'var')
-            save(resfile, 'arfidata', 'axial', 'lat', 't', 'cc_coef', '-v7.3');
+            save(resfile, 'arfidata', 'I', 'Q', 'axial', 'lat', 't', 'cc_coef', '-v7.3');
         else
-            save(resfile, 'arfidata', 'axial', 'lat', 't', '-v7.3');
+            save(resfile, 'arfidata', 'I', 'Q', 'axial', 'lat', 't', '-v7.3');
         end
     end
 elseif max(strcmp(par.probeType,{'curvilinear','phased'}))
